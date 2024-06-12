@@ -1,0 +1,45 @@
+import axios, { type AxiosInstance } from "axios"
+import { RootState } from "../redux/store"
+import { type Store } from "@reduxjs/toolkit"
+import { setAccessToken } from "../redux/slices/auth-slice"
+
+export let axiosInstance: AxiosInstance
+
+export const setupAxiosInstance = (store: Store<RootState>) => {
+  axiosInstance = axios.create({
+    baseURL: process.env.REACT_APP_BASE_URL,
+    headers: { "Content-Type": "application/json" },
+    withCredentials: true,
+  })
+
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      const token = store.getState().auth.access_token
+      if (token != null) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    },
+    async (error) => await Promise.reject(error)
+  )
+
+  axiosInstance.interceptors.response.use(
+    (response) => {
+      return response
+    },
+    async (error) => {
+      const previousRequest = error.config
+      if (
+        error.response.status === 403 &&
+        error.response.data.message !== "PermisionError"
+      ) {
+        try {
+          return await axiosInstance(previousRequest)
+        } catch (error) {
+          store.dispatch(setAccessToken(null))
+        }
+      }
+      return await Promise.reject(error)
+    }
+  )
+}
