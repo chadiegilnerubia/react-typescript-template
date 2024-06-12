@@ -4,8 +4,9 @@ import { useAppDispatch } from "../hooks/useAppDispatch"
 
 import { otherRoutes } from "../routes/other-route"
 import { privateRoutes } from "../routes/private-route"
+import { authRoutes } from "../routes/auth-route"
 
-const router = createBrowserRouter([privateRoutes, otherRoutes])
+const router = createBrowserRouter([authRoutes, privateRoutes, otherRoutes])
 
 export const PersistLogin = () => {
   const appDispatch = useAppDispatch()
